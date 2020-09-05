@@ -1,7 +1,7 @@
 import React from "react";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useMutation } from "@apollo/client";
 
-const Get_Students = gql`
+const GET_STUDENTS = gql`
   query GetAllStudents {
     students {
       id
@@ -12,19 +12,28 @@ const Get_Students = gql`
   }
 `;
 
-export default function Students() {
-  const { loading, error, data } = useQuery(Get_Students);
+const ADD_STUDENT = gql`
+  mutation AddStudent($id: Int!, $email: String!, $age: Int!, $name: String!) {
+    addStudent(input: { id: $id, name: $name, email: $email, age: $age }) {
+      id
+      name
+    }
+  }
+`;
 
-  if (loading) return <h3>Loading...</h3>;
+function Students() {
+  const { loading, error, data } = useQuery(GET_STUDENTS);
+  const [addStd] = useMutation(ADD_STUDENT);
 
-  if (error) return <h3>Error</h3>;
+  if (loading) return <h1>Loading ...</h1>;
+
+  if (error) return <h1>Error</h1>;
 
   const { students } = data;
 
   return (
     <div>
-      <h1>Students List!</h1>
-
+      <h1>Student List</h1>
       <table className="table table-dark">
         <thead>
           <tr>
@@ -47,6 +56,24 @@ export default function Students() {
           })}
         </tbody>
       </table>
+
+      <button
+        onClick={() =>
+          addStd({
+            variables: {
+              id: 9,
+              email: "lol@gmail.com",
+              age: 28,
+              name: "Student 7",
+            },
+            refetchQueries: [{ query: GET_STUDENTS }],
+          })
+        }
+      >
+        Add Student
+      </button>
     </div>
   );
 }
+
+export default Students;
